@@ -1,9 +1,9 @@
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from .arxiv_search import ArxivSearch
 from .google_scholar import GoogleScholar
 
-mcp = FastMCP("mcp-scholarly")
+mcp = MCPServer("mcp-scholarly")
 
 
 @mcp.tool(
