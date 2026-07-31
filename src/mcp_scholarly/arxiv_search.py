@@ -7,10 +7,10 @@ import arxiv
 
 client = arxiv.Client()
 
-# 指数退避重试配置（与 google_scholar 共用）
-DEFAULT_MAX_RETRIES = 50
+# 指数退避重试配置（与 google_scholar 共用，见该文件说明）
+DEFAULT_MAX_RETRIES = 3
 INITIAL_BACKOFF_SEC = 1
-MAX_BACKOFF_SEC = 30
+MAX_BACKOFF_SEC = 10
 
 
 def _get_max_retries() -> int:
@@ -61,7 +61,7 @@ class ArxivSearch:
     def search(self, keyword, max_results=10) -> List[str]:
         """
         搜索 arXiv 论文，失败时指数退避重试。
-        重试上限由环境变量 SCHOLAR_MAX_RETRIES 控制（默认 50）。
+        重试上限由环境变量 SCHOLAR_MAX_RETRIES 控制（默认 3）。
         """
         max_retries = _get_max_retries()
         last_error: BaseException | None = None
