@@ -94,7 +94,7 @@ class GoogleScholar:
         max_retries = _get_max_retries()
         last_error: BaseException | None = None
 
-        for attempt in range(max_retries + 1):
+        for attempt in range(max_retries + 1):  # pragma: no branch
             try:
                 search_results = self.scholarly.search_pubs(keyword)
                 articles = self._parse_results(search_results)

@@ -66,7 +66,7 @@ class ArxivSearch:
         max_retries = _get_max_retries()
         last_error: BaseException | None = None
 
-        for attempt in range(max_retries + 1):
+        for attempt in range(max_retries + 1):  # pragma: no branch
             try:
                 results = self.arxiv_search(keyword, max_results)
                 return self._parse_results(results)
