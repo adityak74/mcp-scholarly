@@ -44,3 +44,17 @@ async def test_main_runs_stdio_server():
         await server.main()
 
     run_mock.assert_called_once_with()
+
+
+def test_arxiv_tool_description_warns_that_matches_may_be_weak():
+    """arXiv returns best-effort matches for any query, including nonsense.
+    A caller scoring novelty must not read "results came back" as "prior work
+    exists", so the tool says so where the model will read it."""
+    from mcp_scholarly import server
+
+    import inspect
+    src = inspect.getsource(server)
+    start = src.index('name="search-arxiv"')
+    desc = src[start:start + 600]
+    assert "relevance" in desc.lower()
+    assert "judge" in desc.lower() or "may not" in desc.lower()

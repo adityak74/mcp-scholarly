@@ -8,7 +8,13 @@ mcp = MCPServer("mcp-scholarly")
 
 @mcp.tool(
     name="search-arxiv",
-    description="Search arxiv for articles related to the given keyword.",
+    description=(
+        "Search arxiv for articles related to the given keyword. Results are "
+        "ranked by relevance, but arxiv returns best-effort matches for any "
+        "query, so a result set may contain weak or unrelated papers. Judge "
+        "each result on its own; do not treat the presence of results as "
+        "proof that prior work exists."
+    ),
 )
 def search_arxiv(keyword: str) -> str:
     if not keyword:

@@ -8,6 +8,12 @@ import arxiv
 client = arxiv.Client()
 
 # 指数退避重试配置（与 google_scholar 共用，见该文件说明）
+# arXiv abstracts run to about 1600 characters. A full page of them is more
+# context than a small local model can spend on a single tool call, and a
+# research agent issues several searches per question. Enough to judge
+# relevance, not the whole abstract.
+MAX_SUMMARY_CHARS = 700
+
 DEFAULT_MAX_RETRIES = 3
 INITIAL_BACKOFF_SEC = 1
 MAX_BACKOFF_SEC = 10
@@ -33,7 +39,14 @@ class ArxivSearch:
         self.client = arxiv.Client()
 
     def arxiv_search(self, keyword, max_results=10):
-        search = arxiv.Search(query=keyword, max_results=max_results, sort_by=arxiv.SortCriterion.SubmittedDate)
+        # Relevance, not SubmittedDate. The caller is usually asking "has
+        # this been done before", and date order answers a different
+        # question: it puts the newest loose match above the closest one.
+        search = arxiv.Search(
+            query=keyword,
+            max_results=max_results,
+            sort_by=arxiv.SortCriterion.Relevance,
+        )
         results = self.client.results(search)
         all_results = list(results)
         return all_results
@@ -45,6 +58,8 @@ class ArxivSearch:
         for result in results:
             title = result.title
             summary = result.summary
+            if len(summary) > MAX_SUMMARY_CHARS:
+                summary = summary[:MAX_SUMMARY_CHARS].rstrip() + "..."
             links = "||".join([link.href for link in result.links])
             pdf_url = result.pdf_url
 
