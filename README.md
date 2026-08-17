@@ -128,3 +128,45 @@ npx @modelcontextprotocol/inspector uv --directory /Users/adityakarnam/PycharmPr
 
 
 Upon launching, the Inspector will display a URL that you can access in your browser to begin debugging.
+
+## Using with zorp
+
+[zorp](https://github.com/aviskaar/zorp) needs a search-capable MCP tool
+before `validate` will run. This server satisfies that check, because zorp
+matches on a search verb in the tool name and these tools are called
+`search-arxiv` and `search-google-scholar`.
+
+```bash
+zorp-agent --yes \
+  --mcp "stdio:scholarly:uv:run:mcp-scholarly" \
+  validate "<your research question>"
+```
+
+Or configure it once, so every run picks it up:
+
+```toml
+# .zorp/mcp.toml
+[[server]]
+name = "scholarly"
+transport = "stdio"
+command = "uv"
+args = ["run", "mcp-scholarly"]
+trust = "sandbox"
+timeout_secs = 60
+```
+
+Notes measured against zorp's transport, not assumed:
+
+- `search-arxiv` answers in about 1 second. zorp's default stdio read
+  budget is 30 seconds, so the default is comfortable. `timeout_secs = 60`
+  above is headroom for `search-google-scholar`, which goes through
+  `scholarly` and a free proxy pool and is far less predictable.
+- Logging goes to stderr. Nothing but JSON-RPC reaches stdout, which is
+  what zorp's newline-delimited framing requires.
+- An empty keyword comes back as an MCP tool error rather than an empty
+  result set. zorp cares about that distinction: a failed search that
+  looks like "no prior work" would put a wrong novelty score into an
+  evidence record.
+- arxiv returns best-effort matches for any query, including nonsense, so
+  a non-empty result set is not by itself evidence that prior work exists.
+  The tool description says so, since that is the text the model reads.

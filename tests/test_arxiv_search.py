@@ -65,7 +65,7 @@ def test_arxiv_search_builds_search_and_returns_results():
     search_cls.assert_called_once_with(
         query="keyword",
         max_results=5,
-        sort_by=arxiv_search_module.arxiv.SortCriterion.SubmittedDate,
+        sort_by=arxiv_search_module.arxiv.SortCriterion.Relevance,
     )
     fake_client.results.assert_called_once_with("search-object")
     assert results == ["result-a", "result-b"]
@@ -137,3 +137,55 @@ def test_search_raises_last_error_after_exhausting_retries(monkeypatch):
             instance.search("keyword")
 
     assert search_mock.call_count == 3
+
+
+# --- zorp readiness: relevance ordering and payload size ---
+
+def test_search_sorts_by_relevance_not_submission_date():
+    """A novelty check wants the closest prior work, not the newest paper
+    that loosely matches. Sorting by date puts recency above similarity and
+    buries the actual match."""
+    search = ArxivSearch()
+    with patch.object(arxiv_search_module.arxiv, "Search") as mock_search:
+        search.client = MagicMock()
+        search.client.results.return_value = iter([])
+        search.arxiv_search("anything")
+    kwargs = mock_search.call_args.kwargs
+    assert kwargs["sort_by"] == arxiv_search_module.arxiv.SortCriterion.Relevance
+
+
+def test_arxiv_search_honors_an_explicit_max_results():
+    search = ArxivSearch()
+    with patch.object(arxiv_search_module.arxiv, "Search") as mock_search:
+        search.client = MagicMock()
+        search.client.results.return_value = iter([])
+        search.arxiv_search("anything", max_results=3)
+    assert mock_search.call_args.kwargs["max_results"] == 3
+
+
+def _result(summary):
+    r = MagicMock()
+    r.title = "T"
+    r.summary = summary
+    r.pdf_url = "http://x/p.pdf"
+    link = MagicMock()
+    link.href = "http://x"
+    r.links = [link]
+    return r
+
+
+def test_long_summaries_are_truncated():
+    """arXiv abstracts average around 1600 characters. Ten of them is more
+    context than a small local model can spend on one tool call, and zorp
+    issues several searches per validate run."""
+    long_summary = "w" * 3000
+    formatted = ArxivSearch._parse_results([_result(long_summary)])
+    assert len(formatted[0]) < 1200
+    summary_line = [l for l in formatted[0].splitlines() if l.startswith("Summary:")][0]
+    assert summary_line.endswith("...")
+
+
+def test_short_summaries_are_left_alone():
+    formatted = ArxivSearch._parse_results([_result("a short abstract")])
+    assert "a short abstract" in formatted[0]
+    assert "..." not in formatted[0]
