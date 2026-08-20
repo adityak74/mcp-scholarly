@@ -5,6 +5,12 @@
 
 A MCP server to search for accurate academic articles. More scholarly vendors will be added soon.
 
+## Search tools
+
+- `search-arxiv` — arXiv search (no key needed)
+- `search-google-scholar` — Google Scholar via the `scholarly` library (free proxy pool)
+- `search-google-web` — Google web search via the [SerpBase API](https://serpbase.dev). Optional; only registered when `SERPBASE_API_KEY` is set. Get a key at https://serpbase.dev/dashboard/api-keys (free tier available).
+
 ![demo1.jpeg](examples/demo1.png)
 
 ![image](https://github.com/user-attachments/assets/13202184-bc12-4530-b7c1-2ee698f3e1cc)
