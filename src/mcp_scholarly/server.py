@@ -2,6 +2,7 @@ from mcp.server.mcpserver import MCPServer
 
 from .arxiv_search import ArxivSearch
 from .google_scholar import GoogleScholar
+from .serpbase_search import SerpBaseSearch
 
 mcp = MCPServer("mcp-scholarly")
 
@@ -33,6 +34,24 @@ def search_google_scholar(keyword: str) -> str:
         raise ValueError("Missing keyword")
     google_scholar = GoogleScholar()
     results = google_scholar.search_pubs(keyword=keyword)
+    return f"Search articles for {keyword}:\n" + "\n\n\n".join(results)
+
+
+@mcp.tool(
+    name="search-google-web",
+    description=(
+        "Search Google for articles and web results related to the given keyword. "
+        "Available when the SERPBASE_API_KEY environment variable is set; when it "
+        "is not set, this tool is not registered."
+    ),
+)
+def search_google_web(keyword: str) -> str:
+    if not keyword:
+        raise ValueError("Missing keyword")
+    serpbase = SerpBaseSearch()
+    results = serpbase.search(keyword)
+    if not results:
+        return f"No results for {keyword}."
     return f"Search articles for {keyword}:\n" + "\n\n\n".join(results)
 
 
