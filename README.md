@@ -1,7 +1,7 @@
 [![MseeP.ai Security Assessment Badge](https://mseep.net/pr/adityak74-mcp-scholarly-badge.png)](https://mseep.ai/app/adityak74-mcp-scholarly)
 
 # mcp-scholarly MCP server
-[![smithery badge](https://smithery.ai/badge/mcp-scholarly)](https://smithery.ai/server/mcp-scholarly)
+[![LightNow capabilities](https://lightnow.ai/badge/io.github.adityak74/mcp-scholarly)](https://lightnow.ai/servers/io.github.adityak74/mcp-scholarly)
 
 A MCP server to search for accurate academic articles. More scholarly vendors will be added soon.
 
